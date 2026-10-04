@@ -16,9 +16,14 @@
 #include "../include/macws_metal_image_filter_request.h"
 #include "../include/macws_code_pointer.h"
 
-// The rootless iOS 16 Theos SDK used by this project omits xpc/xpc.h.  This
-// is the exact public C ABI needed by the UUID-locked reply observer.
-extern void *xpc_data_create(const void *bytes, size_t length);
+// The rootless iOS 16 Theos SDK used by this project omits xpc/xpc.h. Newer
+// SDKs provide it and declare the Objective-C XPC object return type. Keep a
+// compatible fallback for the iOS 16 SDK without conflicting with newer SDKs.
+#if __has_include(<xpc/xpc.h>)
+#include <xpc/xpc.h>
+#else
+extern id xpc_data_create(const void *bytes, size_t length);
+#endif
 
 // Diagnostics are explicitly opt-in for the current boot.  They must never
 // survive as configuration under a persistent mobile or rootless directory.
