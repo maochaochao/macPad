@@ -95,9 +95,9 @@ jobs:
             --source-snapshot "$snapshot"
           python3 misc/macws_artifact_contract.py verify \
             --root . --binary "$built" --manifest "$manifest"
-          package_name="$(sed -n 's/^Package: //p' .theos/_/DEBIAN/control)"
-          package_version="$(sed -n 's/^Version: //p' .theos/_/DEBIAN/control)"
-          package_arch="$(sed -n 's/^Architecture: //p' .theos/_/DEBIAN/control)"
+          package_name="$(sed -n 's/^Package: //p' control)"
+          package_version="$(sed -n 's/^Version: //p' control)"
+          package_arch="iphoneos-arm64"
           package="packages/${package_name}_${package_version}_${package_arch}.deb"
           mkdir -p packages
           dpkg-deb --build --root-owner-group .theos/_ "$package"
