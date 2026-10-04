@@ -57,7 +57,7 @@ jobs:
             THEOS_PACKAGE_SCHEME=rootless GO_EASY_ON_ME=1
 
           test -s "$built"
-          lipo -verify_arch arm64 arm64e "$built"
+          lipo "$built" -verify_arch arm64 arm64e
           dyld_info -arch arm64e -fixups "$built" > "$fixups"
 
           auth_count="$(awk '$2 == "__cfstring" && $4 == "auth-bind" && /key=DA/ { n++ } END { print n+0 }' "$fixups")"
