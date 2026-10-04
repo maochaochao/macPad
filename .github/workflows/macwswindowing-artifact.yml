@@ -64,7 +64,7 @@ jobs:
             FINALPACKAGE=1 STRIP=0 OPTFLAG=-O2 \
             THEOS_PACKAGE_SCHEME=rootless THEOS_PLATFORM_DEB_COMPRESSION_TYPE=gzip \
             GO_EASY_ON_ME=1
-          gmake before-package \
+          gmake stage before-package \
             FINALPACKAGE=1 STRIP=0 OPTFLAG=-O2 \
             THEOS_PACKAGE_SCHEME=rootless THEOS_PLATFORM_DEB_COMPRESSION_TYPE=gzip \
             GO_EASY_ON_ME=1
@@ -95,8 +95,8 @@ jobs:
             --source-snapshot "$snapshot"
           python3 misc/macws_artifact_contract.py verify \
             --root . --binary "$built" --manifest "$manifest"
-          package_name="$(sed -n 's/^Package: //p' control)"
-          package_version="$(sed -n 's/^Version: //p' control)"
+          package_name="com.kdt.macosbooter"
+          package_version="0.3.4"
           package_arch="iphoneos-arm64"
           package="packages/${package_name}_${package_version}_${package_arch}.deb"
           mkdir -p packages
