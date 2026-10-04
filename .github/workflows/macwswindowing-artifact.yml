@@ -23,6 +23,7 @@ jobs:
         shell: bash
         env:
           THEOS: ${{ runner.temp }}/theos
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           git clone --recursive https://github.com/theos/theos.git "$THEOS"
           if ! "$THEOS/bin/install-sdk" latest > "$RUNNER_TEMP/install-sdk.log" 2>&1; then
