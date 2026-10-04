@@ -11,8 +11,6 @@ jobs:
     name: Apple ld64 arm64e build and fixup validation
     runs-on: macos-15
     timeout-minutes: 30
-    env:
-      THEOS: ${{ runner.temp }}/theos
 
     steps:
       - name: Check out source
@@ -23,6 +21,8 @@ jobs:
 
       - name: Install Theos and the matching iOS SDK
         shell: bash
+        env:
+          THEOS: ${{ runner.temp }}/theos
         run: |
           git clone --recursive https://github.com/theos/theos.git "$THEOS"
           if ! "$THEOS/bin/install-sdk" latest > "$RUNNER_TEMP/install-sdk.log" 2>&1; then
@@ -40,6 +40,8 @@ jobs:
 
       - name: Build and validate arm64e artifact
         shell: bash
+        env:
+          THEOS: ${{ runner.temp }}/theos
         run: |
           set -euo pipefail
           built="MacWSWindowing/.theos/obj/MacWSWindowing.dylib"
