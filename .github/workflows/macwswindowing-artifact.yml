@@ -25,7 +25,7 @@ jobs:
           THEOS: ${{ runner.temp }}/theos
         run: |
           git clone --recursive https://github.com/theos/theos.git "$THEOS"
-          if ! "$THEOS/bin/install-sdk" latest > "$RUNNER_TEMP/install-sdk.log" 2>&1; then
+          if ! "$THEOS/bin/install-sdk" 16.5 > "$RUNNER_TEMP/install-sdk.log" 2>&1; then
             tail -100 "$RUNNER_TEMP/install-sdk.log"
             exit 1
           fi
