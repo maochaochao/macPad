@@ -64,7 +64,12 @@ jobs:
             FINALPACKAGE=1 STRIP=0 OPTFLAG=-O2 \
             THEOS_PACKAGE_SCHEME=rootless THEOS_PLATFORM_DEB_COMPRESSION_TYPE=gzip \
             GO_EASY_ON_ME=1
-          gmake stage before-package \
+          gmake stage \
+            FINALPACKAGE=1 STRIP=0 OPTFLAG=-O2 \
+            THEOS_PACKAGE_SCHEME=rootless THEOS_PLATFORM_DEB_COMPRESSION_TYPE=gzip \
+            GO_EASY_ON_ME=1
+
+          gmake before-package \
             FINALPACKAGE=1 STRIP=0 OPTFLAG=-O2 \
             THEOS_PACKAGE_SCHEME=rootless THEOS_PLATFORM_DEB_COMPRESSION_TYPE=gzip \
             GO_EASY_ON_ME=1
@@ -100,6 +105,7 @@ jobs:
           package_arch="iphoneos-arm64"
           package="packages/${package_name}_${package_version}_${package_arch}.deb"
           mkdir -p packages
+          cp control .theos/_/DEBIAN/control
           dpkg-deb --build --root-owner-group .theos/_ "$package"
           test -s "$package"
           python3 misc/macws_artifact_contract.py verify-package \
