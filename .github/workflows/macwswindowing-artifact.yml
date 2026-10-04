@@ -59,7 +59,7 @@ jobs:
             --root . --manifest "$snapshot"
 
           gmake clean
-          gmake MACWS_WINDOWING_CROSS_PREBUILT="$RUNNER_TEMP/MacWSWindowing.dylib" stage before-package \
+          MACWS_WINDOWING_CROSS_PREBUILT="$RUNNER_TEMP/MacWSWindowing.dylib" gmake stage before-package \
             FINALPACKAGE=1 STRIP=0 OPTFLAG=-O2 \
             THEOS_PACKAGE_SCHEME=rootless THEOS_PLATFORM_DEB_COMPRESSION_TYPE=gzip \
             GO_EASY_ON_ME=1
