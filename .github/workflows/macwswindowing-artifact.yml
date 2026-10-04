@@ -62,7 +62,8 @@ jobs:
           gmake clean
           gmake package \
             FINALPACKAGE=1 STRIP=0 OPTFLAG=-O2 \
-            THEOS_PACKAGE_SCHEME=rootless GO_EASY_ON_ME=1
+            THEOS_PACKAGE_SCHEME=rootless THEOS_PLATFORM_DEB_COMPRESSION_TYPE=gzip \
+            GO_EASY_ON_ME=1
 
           test -s "$built"
           lipo "$built" -verify_arch arm64 arm64e
