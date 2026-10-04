@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Install build tools
-        run: brew install make ldid xz
+        run: brew install make ldid dpkg
 
       - name: Install Theos and the matching iOS SDK
         shell: bash
@@ -60,7 +60,11 @@ jobs:
             --root . --manifest "$snapshot"
 
           gmake clean
-          gmake package \
+          gmake stage \
+            FINALPACKAGE=1 STRIP=0 OPTFLAG=-O2 \
+            THEOS_PACKAGE_SCHEME=rootless THEOS_PLATFORM_DEB_COMPRESSION_TYPE=gzip \
+            GO_EASY_ON_ME=1
+          gmake before-package \
             FINALPACKAGE=1 STRIP=0 OPTFLAG=-O2 \
             THEOS_PACKAGE_SCHEME=rootless THEOS_PLATFORM_DEB_COMPRESSION_TYPE=gzip \
             GO_EASY_ON_ME=1
@@ -91,7 +95,12 @@ jobs:
             --source-snapshot "$snapshot"
           python3 misc/macws_artifact_contract.py verify \
             --root . --binary "$built" --manifest "$manifest"
-          package="$(ls -t packages/*.deb | head -1)"
+          package_name="$(sed -n 's/^Package: //p' .theos/_/DEBIAN/control)"
+          package_version="$(sed -n 's/^Version: //p' .theos/_/DEBIAN/control)"
+          package_arch="$(sed -n 's/^Architecture: //p' .theos/_/DEBIAN/control)"
+          package="packages/${package_name}_${package_version}_${package_arch}.deb"
+          mkdir -p packages
+          dpkg-deb --build --root-owner-group .theos/_ "$package"
           test -s "$package"
           python3 misc/macws_artifact_contract.py verify-package \
             --root . --binary "$built" --manifest "$manifest" \
