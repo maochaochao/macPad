@@ -69,7 +69,6 @@ jobs:
             THEOS_PACKAGE_SCHEME=rootless THEOS_PLATFORM_DEB_COMPRESSION_TYPE=gzip \
             GO_EASY_ON_ME=1
 
-
           built="$RUNNER_TEMP/MacWSWindowing.dylib"
           test -s "$built"
           lipo "$built" -verify_arch arm64 arm64e
