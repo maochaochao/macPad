@@ -91,8 +91,7 @@ jobs:
           dpkg-deb --build --root-owner-group .theos/_ "$package"
           test -s "$package"
           cp "$built" "$mac_binary"
-          cp "$(find .theos/_/var/jb/Library/MobileSubstrate/DynamicLibraries -name MacWSWindowing.dylib -print -quit)" "$built"
-          python3 misc/macws_artifact_contract.py create --root . --binary "$built" --manifest "$manifest" --source-snapshot "$snapshot"
+          python3 misc/macws_artifact_contract.py verify --root . --binary "$mac_binary" --manifest "$manifest"
           python3 misc/macws_artifact_contract.py verify-package --root . --binary "$built" --manifest "$manifest" --staging .theos/_ --package "$package"
 
           mkdir -p "$package_dir"
