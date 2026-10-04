@@ -86,7 +86,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/MacWSWindowing-artifact"
           cp "$built" "$RUNNER_TEMP/MacWSWindowing-artifact/MacWSWindowing.dylib"
           cp "$manifest" "$RUNNER_TEMP/MacWSWindowing-artifact/MacWSWindowing.build.json"
-          shasum -a 256 "$built" | awk '{ print $1 }' \
+          shasum -a 256 "$built" \
             > "$RUNNER_TEMP/MacWSWindowing-artifact/MacWSWindowing.sha256"
 
       - name: Upload validated artifact
