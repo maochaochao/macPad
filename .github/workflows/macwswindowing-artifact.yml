@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Install build tools
-        run: brew install gmake ldid
+        run: brew install make ldid
 
       - name: Install Theos and the matching iOS SDK
         shell: bash
