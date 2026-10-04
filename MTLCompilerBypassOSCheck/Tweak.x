@@ -770,7 +770,8 @@ static void DumpRawCompilerRequest(uint32_t sequence, uintptr_t discriminator,
 // records the returned container verbatim, then calls the real XPC API.  No
 // result bytes or status are changed.
 static void *MacWSCompilerReplyDataCreate(const void *bytes, size_t length) {
-    if (!MacWSCompilerDiagnosticsEnabled()) return xpc_data_create(bytes, length);
+    if (!MacWSCompilerDiagnosticsEnabled())
+        return (__bridge void *)xpc_data_create(bytes, length);
     static _Atomic uint32_t replySequence = 0;
     uint32_t sequence = atomic_fetch_add(&replySequence, 1) + 1;
     uint64_t hash = MacWSFNV1a64(bytes, length);
@@ -815,7 +816,7 @@ static void *MacWSCompilerReplyDataCreate(const void *bytes, size_t length) {
                         sequence, path, errno);
         }
     }
-    return xpc_data_create(bytes, length);
+    return (__bridge void *)xpc_data_create(bytes, length);
 }
 
 static uintptr_t MacWSMTLCodeGenServiceBuildRequest(
