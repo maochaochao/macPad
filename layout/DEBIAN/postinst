@@ -714,7 +714,7 @@ install_chroot_runtime() {
     destination="$2"
     [ -f "$source" ] || return 0
     destination_dir=${destination%/*}
-    [ -d "$destination_dir" ] || return 0
+    mkdir -p "$destination_dir" || return 1
     temporary="${destination}.package-new-$$"
     rm -f "$temporary"
     cp -f "$source" "$temporary" || return 1
@@ -722,6 +722,39 @@ install_chroot_runtime() {
     chown root:wheel "$temporary" 2>/dev/null || true
     mv -f "$temporary" "$destination" || return 1
     trust_installed_macho "$destination"
+}
+
+install_chroot_substrate_runtime() {
+    substrate_source=/var/jb/Library/Frameworks/CydiaSubstrate.framework
+    ellekit_source=/var/jb/usr/lib/libellekit.dylib
+    ellekit_target="$ROOTFS/var/jb/usr/lib/libellekit.dylib"
+
+    [ -d "$substrate_source" ] || return 0
+    [ -f "$ellekit_source" ] || return 0
+
+    install_chroot_runtime "$ellekit_source" "$ellekit_target" || return 1
+    if [ -f "$MACHO_PATCHER" ]; then
+        /var/jb/usr/bin/python3 "$MACHO_PATCHER" "$ellekit_target" ||
+            return 1
+    fi
+    /var/jb/usr/bin/ldid -S"$ENTITLEMENTS" -M "$ellekit_target" ||
+        return 1
+    /var/jb/usr/bin/ldid -S"$ENTITLEMENTS" -M "$ellekit_target" ||
+        return 1
+    trust_installed_macho "$ellekit_target"
+
+    for substrate_target in \
+        "$ROOTFS/var/jb/Library/Frameworks/CydiaSubstrate.framework" \
+        "$ROOTFS/System/Library/Frameworks/CydiaSubstrate.framework"; do
+        substrate_parent=${substrate_target%/*}
+        substrate_temporary="${substrate_target}.package-new-$$"
+        mkdir -p "$substrate_parent" || return 1
+        rm -rf "$substrate_temporary"
+        cp -a "$substrate_source" "$substrate_temporary" || return 1
+        chown -R root:wheel "$substrate_temporary" 2>/dev/null || true
+        rm -rf "$substrate_target"
+        mv "$substrate_temporary" "$substrate_target" || return 1
+    done
 }
 
 # /var/jb/usr/macOS is package storage; macOS processes actually load these
@@ -745,6 +778,7 @@ if [ -d "$ROOTFS/System/Library" ]; then
         "$ROOTFS/usr/local/lib/libmachook.dylib" || exit 1
     install_chroot_runtime "$LIBMACHOOK_ARM64" \
         "$ROOTFS/usr/local/lib/libmachook_arm64.dylib" || exit 1
+    install_chroot_substrate_runtime || exit 1
     for bridge in macwsinputd macwsdisplayd macwsinteropd macwsworkspacectl macws-neofetch; do
         install_chroot_runtime "/var/jb/usr/macOS/bin/$bridge" \
             "$ROOTFS/usr/local/bin/$bridge" || exit 1
