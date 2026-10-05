@@ -51,6 +51,7 @@ jobs:
           MACWS_WINDOWING_CROSS_PREBUILT: ${{ runner.temp }}/MacWSWindowing.dylib
         run: |
           set -euo pipefail
+          trap 'echo "Build failed at line $LINENO: $BASH_COMMAND" >&2' ERR
           snapshot="$RUNNER_TEMP/MacWSWindowing.source.json"
           manifest="$RUNNER_TEMP/MacWSWindowing.build.json"
           fixups="$RUNNER_TEMP/MacWSWindowing.fixups.txt"
@@ -59,14 +60,14 @@ jobs:
           python3 misc/macws_artifact_contract.py snapshot \
             --root . --manifest "$snapshot"
 
-          gmake clean
-          gmake stage before-package \
+          gmake -C MacWSWindowing clean all \
             FINALPACKAGE=1 STRIP=0 OPTFLAG=-O2 \
-            THEOS_PACKAGE_SCHEME=rootless THEOS_PLATFORM_DEB_COMPRESSION_TYPE=gzip \
+            THEOS_PACKAGE_SCHEME=rootless \
             GO_EASY_ON_ME=1
 
           built="$RUNNER_TEMP/MacWSWindowing.dylib"
           mac_binary="$RUNNER_TEMP/MacWSWindowing.original.dylib"
+          cp MacWSWindowing/.theos/obj/MacWSWindowing.dylib "$built"
           test -s "$built"
           lipo "$built" -verify_arch arm64 arm64e
           dyld_info -arch arm64e -fixups "$built" > "$fixups"
@@ -83,13 +84,17 @@ jobs:
             --source-snapshot "$snapshot"
           python3 misc/macws_artifact_contract.py verify \
             --root . --binary "$built" --manifest "$manifest"
-          package_name="com.kdt.macosbooter"
-          package_version="0.3.4"
-          package_arch="iphoneos-arm64"
-          package="packages/${package_name}_${package_version}_${package_arch}.deb"
-          mkdir -p packages
-          cp control .theos/_/DEBIAN/control
-          dpkg-deb --build --root-owner-group .theos/_ "$package"
+          # Keep Theos's control generation, plist conversion and rootless
+          # relocation. Only substitute the archive writer for dm.pl.
+          package_writer="$RUNNER_TEMP/macpad-dpkg-deb"
+          printf '#!/bin/bash\nexec dpkg-deb --root-owner-group "$@"\n' > "$package_writer"
+          chmod +x "$package_writer"
+          gmake clean
+          gmake package \
+            FINALPACKAGE=1 STRIP=0 OPTFLAG=-O2 \
+            THEOS_PACKAGE_SCHEME=rootless THEOS_PLATFORM_DEB_COMPRESSION_TYPE=gzip \
+            _THEOS_PLATFORM_DPKG_DEB="$package_writer" GO_EASY_ON_ME=1
+          package="$(cat .theos/last_package)"
           test -s "$package"
           cp "$built" "$mac_binary"
           python3 misc/macws_artifact_contract.py verify --root . --binary "$mac_binary" --manifest "$manifest"
